@@ -10,6 +10,14 @@
 "while"         return WHILE;
 "if"            return IF;
 "else"          return ELSE;
+"for"           return FOR;
+"repeat"        return REPEAT;
+"until"         return UNTIL;
+"switch"        return SWITCH;
+"case"          return CASE;
+"break"         return BREAK;
+"default"       return DEFAULT;
+"continue"      return CONTINUE;
 "print"         return PRINT;
 
 
@@ -25,6 +33,10 @@
 "=="            return EQ;
 "!="            return NE;
 "="             return ASSIGNMENT;
+"&&"            return AND;
+"||"            return OR;
+"++"            return INC;
+"--"            return DEC;
 
 
 [0-9]+      {
@@ -32,13 +44,13 @@
                 return DIGITS;
             }
 
-[-()<>=+*/;{}.\n] {
+[-()<>=+*/;{}.:] {
                     return *yytext;
                 }
 
-[ \t]   ;       /* skip whitespace */
+[ \t\n]*        ;       /* skip whitespace */
 
-[a-zA-Z]*   {
+[a-zA-Z]+   {
                 yylval = *yytext;
                 return VARIABLE;
             }
