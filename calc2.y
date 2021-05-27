@@ -100,16 +100,16 @@ while:
         WHILE '(' condition ')' stmt   { printf("while \n"); }
         ;     
 
-// incrementation:
-//         // VARIABLE INC
-//         // | VARIABLE DEC
-//         VARIABLE "=" expr
-//         // | INC VARIABLE
-//         // | DEC VARIABLE
-//         ;
+incrementation:
+        VARIABLE INC
+        | VARIABLE DEC
+        | VARIABLE "=" expr
+        | INC VARIABLE
+        | DEC VARIABLE
+        ;
 
 for: 
-        FOR '(' declare condition ';' VARIABLE '=' expr ')' stmt   { printf("for \n"); }
+        FOR '(' declare condition ';' incrementation ')' stmt   { printf("for \n"); }
         ;
 
 repeatuntil:
@@ -124,7 +124,8 @@ switch:
         SWITCH '(' VARIABLE ')' stmt                     
         ;
 
-function: identifier VARIABLE '(' identifier ')' '{' stmt  RETURN VARIABLE ';' '}'
+function: 
+        identifier VARIABLE '(' identifier ')' '{' stmt  RETURN VARIABLE ';' '}'    { printf("function\n"); }
         ;
 
 %%
