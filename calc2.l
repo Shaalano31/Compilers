@@ -18,7 +18,7 @@
 "break"         return BREAK;
 "default"       return DEFAULT;
 "continue"      return CONTINUE;
-"print"         return PRINT;
+"return"        return RETURN;
 
 
 "const"         return CONSTANT;
@@ -28,13 +28,14 @@
 "float"         return FLOAT;
 "double"        return DOUBLE;
 "string"        return STRING;
+"void"          return VOID;
 ">="            return GE;
 "<="            return LE;
 "=="            return EQ;
 "!="            return NE;
-"="             return ASSIGNMENT;
 "&&"            return AND;
 "||"            return OR;
+'+'             return PLUS;
 "++"            return INC;
 "--"            return DEC;
 
@@ -44,7 +45,7 @@
                 return DIGITS;
             }
 
-[-()<>=+*/;{}.:] {
+[-()<>=*/;{}.:] {
                     return *yytext;
                 }
 
