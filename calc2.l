@@ -22,7 +22,7 @@
 
 
 "const"         return CONSTANT;
-"int"           return INT;        
+"int"           return INT;
 "bool"          return BOOLEAN;
 "char"          return CHARACTER;
 "float"         return FLOAT;
@@ -45,7 +45,7 @@
                 return DIGITS;
             }
 
-[-()<>=*/;{}.:] {
+[-()<>=*/;{}.:,] {
                     return *yytext;
                 }
 
