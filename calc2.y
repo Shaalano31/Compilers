@@ -22,6 +22,7 @@
 
 program:
         program stmt
+        | program function
         | /* NULL */
         ;
 
@@ -36,7 +37,7 @@ stmt:
         | case
         | repeatuntil
         | switch
-        | function    { printf("function \n");}
+
         | VARIABLE '=' expr ';'
         | RETURN VARIABLE ';' { printf("return \n");}
         | '{' stmt_list '}'     { printf("DONE \n");}
