@@ -47,6 +47,10 @@
                 yylval.iValue = atoi(yytext);
                 return DIGITS;
             }
+[1-9][0-9]*.[0-9]+ {
+                yylval.iValue = atoi(yytext);
+                return FLOATDIGIT;
+            }
 
 [-()<>=*/;{}+.:,] {
                     return *yytext;

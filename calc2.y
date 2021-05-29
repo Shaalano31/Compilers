@@ -15,7 +15,7 @@
               /* node pointer */
 };
 %token <iValue>DIGITS <sIndex>VARIABLE INT BOOLEAN CHARACTER FLOAT CONSTANT DOUBLE STRING VOID
-%token WHILE IF RETURN FOR REPEAT UNTIL SWITCH CASE BREAK DEFAULT CONTINUE INC DEC 
+%token WHILE IF RETURN FOR REPEAT UNTIL SWITCH CASE BREAK DEFAULT CONTINUE INC DEC FLOATDIGIT
 
 %nonassoc IFX
 %nonassoc ELSE
@@ -40,14 +40,12 @@ stmt:
         | if            { printf("if \n");}
         | while         { printf("while \n");}
         | for           { printf("for \n");}
-        | case          { printf("case \n");}
         | BREAK ';'     { printf("BREAK \n");}        
         | CONTINUE ';'  { printf("CONTINUE \n");}
         | repeatuntil   { printf("repeatuntil \n");}
         | switch        { printf("switch \n");}
+        |FunctionStmt  
         | VARIABLE '=' expr ';'  { printf("VARIABLE '=' expr; \n");}
-        | RETURN VARIABLE ';' { printf("return var \n");}
-        | RETURN ';'            { printf("return \n");}
         |'{' stmt_list '}'     { printf("DONE \n");}
         ;
 
@@ -76,7 +74,8 @@ const:
         ;
 
 expr:
-          DIGITS                                      { printf("digit "); }
+          DIGITS     { printf("digit "); }
+        | FLOATDIGIT                              { printf("FLOATDIGIT "); } 
         | VARIABLE                                    { printf("var "); }
         | expr   PLUS   expr         { printf("expr + expr \n"); }
         | expr   '-'   expr         { printf("expr - expr \n"); }
@@ -109,7 +108,7 @@ if:
         ;
 
 while:
-        WHILE '(' condition ')' stmt   { printf("while \n"); }
+        WHILE '(' condition ')' stmt   
         ;
 
 incrementation:
@@ -136,11 +135,13 @@ repeatuntil:
         ;
 
 case:
-        CASE DIGITS':' stmt BREAK ';'
+        CASE DIGITS':' stmt BREAK ';' case
+        |
         ;
 
+
 switch:
-        SWITCH '(' VARIABLE ')' stmt
+        SWITCH '(' VARIABLE ')' case
         ;
 
 argument:
@@ -152,9 +153,14 @@ argument:
 arguments:  ',' identifier VARIABLE arguments { printf("arguments\n"); }
 		|
 		;
-
+FunctionStmt:
+                 
+                 RETURN VARIABLE ';'
+                | RETURN DIGITS ';'
+                | RETURN ';'
+                ;
 function:
-        identifier VARIABLE '(' argument ')'  stmt    
+        identifier VARIABLE '(' argument ')'  stmt    { printf("Function\n"); }
         ;
 
 %%
