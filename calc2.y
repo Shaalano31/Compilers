@@ -2,19 +2,25 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <stdarg.h>
+    
     void yyerror(char *);
     int yylex(void);
 
     int sym[26];
 %}
 
-%token DIGITS VARIABLE INT BOOLEAN CHARACTER FLOAT CONSTANT DOUBLE STRING VOID
-%token WHILE IF RETURN FOR REPEAT UNTIL SWITCH CASE BREAK DEFAULT CONTINUE INC DEC
+%union {
+    int iValue;                 /* integer value */
+    char sIndex;                /* symbol table index */
+              /* node pointer */
+};
+%token <iValue>DIGITS <sIndex>VARIABLE INT BOOLEAN CHARACTER FLOAT CONSTANT DOUBLE STRING VOID
+%token WHILE IF RETURN FOR REPEAT UNTIL SWITCH CASE BREAK DEFAULT CONTINUE INC DEC 
 
 %nonassoc IFX
 %nonassoc ELSE
 
-%left GE LE EQ NE '>' '<' AND OR
+%left GE LE EQ NE '>' '<' AND OR NOT
 %left PLUS '-'
 %left '*' '/'
 %nonassoc UMINUS
@@ -27,20 +33,22 @@ program:
         ;
 
 stmt:
-        ';'{ printf("semi \n");}
-        | expr ';' { printf("expr semi \n");}
-        | declare  { printf("declare \n");}
-        | const    { printf("const \n");}
-        | if
-        | while
-        | for
-        | case
-        | repeatuntil
-        | switch
-
-        | VARIABLE '=' expr ';'
-        | RETURN VARIABLE ';' { printf("return \n");}
-        | '{' stmt_list '}'     { printf("DONE \n");}
+        ';'             { printf("semi \n");}
+        | expr ';'      { printf("expr semi \n");}
+        | declare       { printf("declare \n");}
+        | const         { printf("const \n");}
+        | if            { printf("if \n");}
+        | while         { printf("while \n");}
+        | for           { printf("for \n");}
+        | case          { printf("case \n");}
+        | BREAK ';'     { printf("BREAK \n");}        
+        | CONTINUE ';'  { printf("CONTINUE \n");}
+        | repeatuntil   { printf("repeatuntil \n");}
+        | switch        { printf("switch \n");}
+        | VARIABLE '=' expr ';'  { printf("VARIABLE '=' expr; \n");}
+        | RETURN VARIABLE ';' { printf("return var \n");}
+        | RETURN ';'            { printf("return \n");}
+        |'{' stmt_list '}'     { printf("DONE \n");}
         ;
 
 stmt_list:
@@ -55,12 +63,12 @@ identifier:
         | FLOAT                 { printf("This is float \n");}
         | DOUBLE                { printf("This is double \n");}
         | STRING                { printf("This is string \n");}
-        | VOID
+        | VOID                  { printf("This is void \n");}
         ;
 
 declare:
-        identifier VARIABLE ';'
-        | identifier VARIABLE '=' expr ';'
+        identifier VARIABLE ';'         { printf("var is declared \n");}        
+        | identifier VARIABLE '=' expr ';' { printf("var is declared with inital value \n");}
         ;
 
 const:
@@ -74,7 +82,7 @@ expr:
         | expr   '-'   expr         { printf("expr - expr \n"); }
         | expr   '*'   expr         { printf("expr * expr \n"); }
         | expr   '/'   expr         { printf("expr / expr \n"); }
-        | incrementation ';'
+        | incrementation ';'        { printf("incrementation\n"); }
         | '('   expr   ')'          { printf("(expr)\n"); }
         ;
 
@@ -85,11 +93,12 @@ comparisons:
         | expr EQ expr          { printf("expr EQ expr \n"); }
         | expr '<' expr         { printf("expr < expr \n"); }
         | expr '>' expr         { printf("expr > expr \n"); }
+        | NOT expr              { printf("NOT expr \n"); }
         ;
 
 condition:
-        comparisons                                   { printf("compp \n"); }
-        | VARIABLE                                    { printf("testing \n"); }
+        comparisons               { printf("compp \n"); }
+        | VARIABLE                { printf("testing \n"); }
         | condition AND condition { printf("andddd \n"); }
         | condition OR condition  { printf("orrrr \n"); }
         ;
@@ -104,14 +113,14 @@ while:
         ;
 
 incrementation:
-        VARIABLE INC
-        | VARIABLE DEC
+        VARIABLE INC             { printf("var++ \n"); }
+        | VARIABLE DEC                  { printf("var-- \n"); }
 
         ;
 preincrementation:
-              VARIABLE "=" expr
-            | INC VARIABLE
-            | DEC VARIABLE
+             VARIABLE "=" expr  { printf("VARIABLE = expr \n"); }
+            | INC VARIABLE       { printf("++var \n"); }
+            | DEC VARIABLE      { printf("--var \n"); }
             ;
 forincrementation:
               incrementation
@@ -119,11 +128,11 @@ forincrementation:
               ;
 
 for:
-        FOR '(' declare condition ';' forincrementation ')' stmt   { printf("for \n"); }
+        FOR '(' declare condition ';' forincrementation ')' stmt  
         ;
 
 repeatuntil:
-        REPEAT stmt UNTIL condition            { printf("repear until\n"); }
+        REPEAT stmt UNTIL condition          
         ;
 
 case:
@@ -145,7 +154,7 @@ arguments:  ',' identifier VARIABLE arguments { printf("arguments\n"); }
 		;
 
 function:
-        identifier VARIABLE '(' argument ')'  stmt    { printf("function\n"); }
+        identifier VARIABLE '(' argument ')'  stmt    
         ;
 
 %%

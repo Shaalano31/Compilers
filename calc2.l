@@ -19,8 +19,6 @@
 "default"       return DEFAULT;
 "continue"      return CONTINUE;
 "return"        return RETURN;
-
-
 "const"         return CONSTANT;
 "int"           return INT;
 "bool"          return BOOLEAN;
@@ -35,24 +33,29 @@
 "!="            return NE;
 "&&"            return AND;
 "||"            return OR;
-'+'             return PLUS;
 "++"            return INC;
 "--"            return DEC;
+"!"             return NOT;
 
 
-[0-9]+      {
-                yylval = atoi(yytext);
+0           {
+                yylval.iValue = atoi(yytext);
                 return DIGITS;
             }
 
-[-()<>=*/;{}.:,] {
+[1-9][0-9]* {
+                yylval.iValue = atoi(yytext);
+                return DIGITS;
+            }
+
+[-()<>=*/;{}+.:,] {
                     return *yytext;
                 }
 
 [ \t\n]*        ;       /* skip whitespace */
 
-[a-zA-Z]+   {
-                yylval = *yytext;
+[a-zA-Z]+  { 
+                yylval.sIndex = *yytext-'a';
                 return VARIABLE;
             }
 
