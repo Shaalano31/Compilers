@@ -1,7 +1,8 @@
     /* calculator #1 */
 %{
-    #include "y.tab.h"
     #include <stdlib.h>
+    #include "calc2.h"
+    #include "y.tab.h"
     void yyerror(char *);
 %}
 
@@ -36,6 +37,7 @@
 "++"            return INC;
 "--"            return DEC;
 "!"             return NOT;
+"true" | "false"return BOOL_VALUES;
 
 
 0           {
