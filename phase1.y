@@ -36,7 +36,7 @@
 %left '*' '/'
 %nonassoc UMINUS
 
-%type <nPtr> stmt expr stmt_list comparisons if while condition
+%type <nPtr> stmt expr stmt_list comparisons if while condition incrementation preincrementation
 %%
 
 program:
@@ -51,15 +51,15 @@ stmt:
         | declare       { printf("declare \n");}
         | const         { printf("const \n");}
         | if            { printf("if \n");}
-        | while         { printf("while \n");}
+        | while         //{ printf("while \n");}
         | for           { printf("for \n");}
         | BREAK ';'     { printf("BREAK \n");}        
         | CONTINUE ';'  { printf("CONTINUE \n");}
         | repeatuntil   { printf("repeatuntil \n");}
         | switch        { printf("switch \n");}
-        //|FunctionStmt  
-        | VARIABLE '=' expr ';'  { printf("VARIABLE '=' expr; \n");}
-        |'{' stmt_list '}'     { printf("DONE \n");}
+        //| FunctionStmt  
+        | VARIABLE '=' expr ';' { $$ = opr('=', 2, id($1), $3); }
+        |'{' stmt_list '}'     { $$ = $2; }
         ;
 
 stmt_list:
@@ -95,7 +95,7 @@ expr:
         | expr   '-'   expr         { $$ = opr('-', 2, $1, $3); }
         | expr   '*'   expr         { $$ = opr('*', 2, $1, $3); }
         | expr   '/'   expr         { $$ = opr('/', 2, $1, $3); }
-        //| incrementation ';'        { printf("incrementation\n"); }
+        | incrementation           { $$ = $1; }
         | '('   expr   ')'          { $$ = $2; }
         ;
 
@@ -126,14 +126,14 @@ while:
         ;
 
 incrementation:
-        VARIABLE INC             { printf("var++ \n"); }
-        | VARIABLE DEC                  { printf("var-- \n"); }
+        VARIABLE INC             { $$ = opr(INC, 1, id($1));}
+        | VARIABLE DEC           { $$ = opr(DEC, 1, id($1));}
 
         ;
 preincrementation:
-             VARIABLE "=" expr  { printf("VARIABLE = expr \n"); }
-            | INC VARIABLE       { printf("++var \n"); }
-            | DEC VARIABLE      { printf("--var \n"); }
+             VARIABLE "=" expr  { $$ = opr('=', 2, id($1), $3); }
+            | INC VARIABLE      { $$ = opr(INC, 1, id($2));}
+            | DEC VARIABLE      { $$ = opr(INC, 1, id($2));}
             ;
 forincrementation:
               incrementation
@@ -167,12 +167,12 @@ argument:
 arguments:  ',' identifier VARIABLE arguments { printf("arguments\n"); }
 		|
 		;
-FunctionStmt:
+// FunctionStmt:
                  
-                 RETURN VARIABLE ';'
-                | RETURN DIGITS ';'
-                | RETURN ';'
-                ;
+//                  RETURN VARIABLE ';'
+//                 | RETURN DIGITS ';'
+//                 | RETURN ';'
+//                 ;
 function:
         identifier VARIABLE '(' argument ')'  stmt    { printf("Function\n"); }
         ;

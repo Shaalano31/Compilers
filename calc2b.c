@@ -50,9 +50,21 @@ int ex(nodeType *p) {
             ex(p->opr.op[1]);
             printf("\tpop\t%c\n", p->opr.op[0]->id.i + 'a');
             break;
-        case UMINUS:    
+        case UMINUS:   
             ex(p->opr.op[0]);
             printf("\tneg\n");
+            break;
+        case INC:
+            ex(p->opr.op[0]);
+            printf("\tpush\t1\n");
+            printf("\tadd\n");
+            printf("\tpop\t%c\n", p->opr.op[0]->id.i + 'a');
+            break;
+        case DEC:
+            ex(p->opr.op[0]);
+            printf("\tpush\t1\n");
+            printf("\tsub\n");
+            printf("\tpop\t%c\n", p->opr.op[0]->id.i + 'a');
             break;
         default:
             ex(p->opr.op[0]);
