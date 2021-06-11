@@ -66,6 +66,13 @@
 
 [ \t\n]*        ;       /* skip whitespace */
 
+["]([^"]|\\(.|\n))*["]  {
+                        yylval.str = malloc(yyleng -1);
+                        memcpy(yylval.str, yytext + 1, yyleng - 2);
+                        yylval.str[yyleng - 2] = 0;
+                        return CAR;
+                        }
+
 [a-zA-Z]+  { 
                 //yylval.sIndex = *yytext-'a';
                 strcpy(yylval.sIndex, yytext);

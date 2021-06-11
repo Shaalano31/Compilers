@@ -20,7 +20,7 @@
         int dataTypeVariable;
         
         int defaultInt = 0;
-        char defaultChar = 'a';
+        //char* defaultChar = 'a';
         float defaultFloat = 0.0;
         char* defaultBool;
     
@@ -31,6 +31,7 @@
 %union {
     int iValue;                 /* integer value */
     char sIndex[30];                /* symbol table index */
+    char* str;
     double iFloat;
     bool boole;
     struct DataItem *nPtr;         /* node pointer */
@@ -38,6 +39,7 @@
 %token <iValue>DIGITS 
 %token <sIndex>VARIABLE 
 %token <iFloat>FLOATDIGIT
+%token <str>CAR
 //%token <boole>BOOL_VALUES
 %token WHILE IF RETURN FOR REPEAT UNTIL SWITCH CASE BREAK DEFAULT CONTINUE INC DEC INT BOOLEAN CHARACTER FLOAT CONSTANT DOUBLE STRING VOID PRINT TRUEE FALSEE
 
@@ -71,11 +73,11 @@ stmt:
         | CONTINUE ';'  { printf("CONTINUE \n");}
         | repeatuntil   { printf("repeatuntil \n");}
         | switch        { printf("switch \n");}
-        | PRINT expr ';'    {item = $2; 
+        | PRINT expr ';'    {item = $2; printf("data is %d", item->DataType);
                             switch (item->DataType)
                             {
                                 case 1:
-                                    printf("Printed value1 %c\n", item->dataChar);
+                                    printf("Printed value1 %s\n", item->dataChar);
                                     break;
                                 case 2:
                                     printf("Printed value2 %d\n", item->data);
@@ -89,12 +91,14 @@ stmt:
                             } 
                             }
         //| FunctionStmt  
-        //| VARIABLE '=' expr ';' //{ $$ = opr('=', 2, id($1), $3); }
-        //|'{' stmt_list '}'     //{ $$ = $2; }
+        | VARIABLE '=' expr ';'  { dehk = malloc(sizeof(struct DataItem));
+                                   dehk = $3;
+                                   update(dehk->data,dehk->dataChar,dehk->dataFloat, dehk->dataBool, $1);}
+        | '{' stmt_list '}'     { $$ = $2; }
         ;
 
 stmt_list:
-          stmt                  //{ $$ = $1; }
+          stmt                  { $$ = $1; }
         | stmt_list stmt        //{ $$ = opr(';', 2, $1, $2); }
         ;
 
@@ -110,16 +114,16 @@ identifier:
 
 declare:
         identifier VARIABLE ';'            { enum DataTypes* nulldude; 
-                                            insert(defaultInt,defaultChar,defaultFloat, 1, $2, 0, dataTypeVariable, 0, nulldude, 0 ); }
+                                            $$ = insert(defaultInt,"a",defaultFloat, 1, $2, 0, dataTypeVariable, 0, nulldude, 0 ); }
 
-        | identifier VARIABLE '=' expr ';'  {dehk = malloc(sizeof(struct DataItem));
+        | identifier VARIABLE '=' expr ';'  { printf("declare\n"); dehk = malloc(sizeof(struct DataItem));
                                              dehk = $4 ;
                                              enum DataTypes* nulldude;
-                                             insert(dehk->data,dehk->dataChar,dehk->dataFloat, dehk->dataBool, $2, 0, dataTypeVariable, 0, nulldude, 0 ); }
+                                             $$ = insert(dehk->data,dehk->dataChar,dehk->dataFloat, dehk->dataBool, $2, 0, dataTypeVariable, 0, nulldude, 0 ); }
         ;
 
 const:
-        CONSTANT declare                { printf("this is a constant \n"); }
+        CONSTANT declare                { printf("constant\n"); updateConst($2); }
         ;
 
 expr:
@@ -136,6 +140,10 @@ expr:
         | FALSEE                   { item = malloc(sizeof(struct DataItem));
                                      item->dataBool = 0;
                                      $$ = item;      }
+        | CAR                      { item = malloc(sizeof(struct DataItem));
+                                     item->dataChar = $1;
+                                     $$ = item;      }
+                                     //printf("Catch\n");   }
         // | '-' expr %prec UMINUS   //      { $$ = opr(UMINUS, 1, $2); }
         // | expr   '+'   expr       //  { $$ = opr('+', 2, $1, $3); }
         // | expr   '-'   expr       //  { $$ = opr('-', 2, $1, $3); }
