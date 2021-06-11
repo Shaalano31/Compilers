@@ -1,8 +1,12 @@
-typedef enum { typeCon, typeId, typeOpr } nodeEnum;
+#include <stdbool.h>
+typedef enum { typeCon, typeId, typeOpr, typeData } nodeEnum;
 
 /* constants */
 typedef struct {
     int value;                  /* value of constant */
+    float valueFloat;
+    char valueChar;
+    bool valueBool;
 } conNodeType;
 
 /* identifiers */
@@ -23,8 +27,8 @@ typedef struct nodeTypeTag {
     union {
         conNodeType con;        /* constants */
         idNodeType id;          /* identifiers */
-        oprNodeType opr;        /* operators */
+        oprNodeType opr;        /* operators */      /* type of variable */
     };
 } nodeType;
 
-extern int sym[26];
+extern int sym[5];

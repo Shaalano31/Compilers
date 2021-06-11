@@ -53,10 +53,10 @@ int ex(nodeType *p) {
                 printf("L%03d:\n", lbl1);
             }
             break;
-        // case PRINT:     
-        //     ex(p->opr.op[0]);
-        //     printf("\tprint\n");
-        //     break;
+        case PRINT:     
+            ex(p->opr.op[0]);
+            printf("\tprint\n");
+            break;
         case '=':       
             ex(p->opr.op[1]);
             printf("\tpop\t%c\n", p->opr.op[0]->id.i + 'a');

@@ -2,6 +2,8 @@
 %{
     #include <stdlib.h>
     #include "calc2.h"
+    //#include "symbol_table.c"
+    #include <string.h>
     #include "y.tab.h"
     void yyerror(char *);
 %}
@@ -37,9 +39,12 @@
 "++"            return INC;
 "--"            return DEC;
 "!"             return NOT;
-"true" | "false"return BOOL_VALUES;
+"print"         return PRINT;
 
 
+"true"          return TRUEE;
+"false"         return FALSEE;
+    
 0           {
                 yylval.iValue = atoi(yytext);
                 return DIGITS;
@@ -51,9 +56,9 @@
             }
             
 [1-9][0-9]*\.[0-9]+ {
-                yylval.iValue = atoi(yytext);
-                return FLOATDIGIT;
-            }
+                        yylval.iFloat = strtod(yytext,NULL);;
+                        return FLOATDIGIT;
+                    }
 
 [-()<>=*/;{}+.:,] {
                     return *yytext;
@@ -62,7 +67,8 @@
 [ \t\n]*        ;       /* skip whitespace */
 
 [a-zA-Z]+  { 
-                yylval.sIndex = *yytext-'a';
+                //yylval.sIndex = *yytext-'a';
+                strcpy(yylval.sIndex, yytext);
                 return VARIABLE;
             }
 
