@@ -91,9 +91,12 @@ stmt:
                             } 
                             }
         //| FunctionStmt  
-        | VARIABLE '=' expr ';'  { dehk = malloc(sizeof(struct DataItem));
+        | VARIABLE '=' expr ';'  { display();
+
+        dehk = malloc(sizeof(struct DataItem));
                                    dehk = $3;
-                                   update(dehk->data,dehk->dataChar,dehk->dataFloat, dehk->dataBool, $1);}
+                                   update(dehk->data,dehk->dataChar,dehk->dataFloat, dehk->dataBool, $1);
+                                   display();}
         | '{' stmt_list '}'     { $$ = $2; }
         ;
 
@@ -114,7 +117,7 @@ identifier:
 
 declare:
         identifier VARIABLE ';'            { enum DataTypes* nulldude; 
-                                            $$ = insert(defaultInt,"a",defaultFloat, 1, $2, 0, dataTypeVariable, 0, nulldude, 0 ); }
+                                            $$ = insert(defaultInt,"a",defaultFloat, 1, $2, 0, dataTypeVariable, 0, nulldude, 0 ); display(); }
 
         | identifier VARIABLE '=' expr ';'  { printf("declare\n"); dehk = malloc(sizeof(struct DataItem));
                                              dehk = $4 ;
@@ -123,7 +126,7 @@ declare:
         ;
 
 const:
-        CONSTANT declare                { printf("constant\n"); updateConst($2); }
+        CONSTANT declare                { printf("constant\n"); updateConst($2);  }
         ;
 
 expr:
