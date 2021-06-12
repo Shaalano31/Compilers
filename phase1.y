@@ -23,6 +23,8 @@
         //char* defaultChar = 'a';
         float defaultFloat = 0.0;
         char* defaultBool;
+        enum DataTypes FunctionInputs[20];
+        int FuncCount = 0; 
     
     //struct DataItem* SymbolTable[20]; 
     int sym[5];
@@ -91,39 +93,55 @@ stmt:
                             } 
                             }
         //| FunctionStmt  
-        | VARIABLE '=' expr ';'  { display();
-
-                                   dehk = malloc(sizeof(struct DataItem));
-                                   dehk = $3;
-                                   update(dehk->data,dehk->dataChar,dehk->dataFloat, dehk->dataBool, $1);
-                                   display();}
-        | '{' stmt_list '}'     { $$ = $2; }
+        | VARIABLE '=' expr ';'   { 
+                                    item = malloc(sizeof(struct DataItem));
+                                     //item = opr('+', 2, $1, $3); 
+                                    // $$ = ex(item);
+                                    item = search($1);  
+                                    if(item->DataType == $3->DataType)
+                                        printf("Compiled Successfuly, Matched Types\n");
+                                    else
+                                        printf("Mismatched data types, Syntax error\n");
+                                   }
+        | FunctionStmt  {printf("function statement\n");}
+                                
+        | '{' stmt_list '}'     //{ $$ = $2; }
         ;
 
 stmt_list:
-          stmt                  { $$ = $1; }
+          stmt                 // { $$ = $1; }
         | stmt_list stmt        //{ $$ = opr(';', 2, $1, $2); }
         ;
-
 identifier:
-        INT                     {dataTypeVariable = 2;} 
+        INT                     {dataTypeVariable = 2; printf("Identifier: Int\n");} 
         | BOOLEAN               {dataTypeVariable = 4;}
         | CHARACTER             {dataTypeVariable = 1;}
         | FLOAT                 {dataTypeVariable = 3;}
-        | DOUBLE                { printf("This is double \n");}
-        | STRING                { printf("This is string \n");}
-        | VOID                  { printf("This is void \n");}
+        | DOUBLE                {dataTypeVariable = 3;}
+        | STRING                {dataTypeVariable = 1;}
+        | VOID                  {dataTypeVariable = 5;}
         ;
 
 declare:
         identifier VARIABLE ';'            { enum DataTypes* nulldude; 
-                                            $$ = insert(defaultInt,"a",defaultFloat, 1, $2, 0, dataTypeVariable, 0, nulldude, 0 ); display(); }
+                                            $$ = insert(defaultInt,"a",defaultFloat, 1, $2, 0, dataTypeVariable, 0, nulldude, 0 ); 
+                                            printf("Compiled Successfuly, Matched Types, Inserted into Symbol Table Var: %s\n",$2);
+                                          }
 
-        | identifier VARIABLE '=' expr ';'  { printf("declare\n"); 
+        | identifier VARIABLE '=' expr ';'  
+                                        {    
                                              dehk = malloc(sizeof(struct DataItem));
                                              dehk = $4 ;
                                              enum DataTypes* nulldude;
-                                             $$ = insert(dehk->data,dehk->dataChar,dehk->dataFloat, dehk->dataBool, $2, 0, dataTypeVariable, 0, nulldude, 0 ); }
+                                             if(dataTypeVariable == $4->DataType)
+                                                {
+                                                printf("Compiled Successfuly, Matched Types, Inserted into Symbol Table Var: %s\n",$2);
+                                                $$ = insert(dehk->data,dehk->dataChar,dehk->dataFloat, dehk->dataBool, $2, 0, dataTypeVariable, 0, nulldude, 0 ); 
+                                                }
+                                             else
+                                                printf("Mismatched data types, Variable not inserted\n");
+                                                
+                                        }
         ;
 
 const:
@@ -149,6 +167,7 @@ expr:
                                      $$ = item;      }
         | CAR                      { item = malloc(sizeof(struct DataItem));
                                      item->dataChar = $1;
+                                     item->DataType = Char_Type;
                                      $$ = item;      }
                                      //printf("Catch\n");   }
         | '-' expr %prec UMINUS    { printf("Welcome\n"); item = malloc(sizeof(struct DataItem));
@@ -160,35 +179,108 @@ expr:
                                      item = opr('-', 2, dehk ,$2); 
                                      printf("Welcome\n");
                                      item->DataType = $2->DataType;
-                                     $$ = ex(item);  }
+                                     $$ = item;  }
 
         | expr   '+'   expr        { item = malloc(sizeof(struct DataItem));
-                                     item = opr('+', 2, $1, $3); 
-                                     item->DataType = $1->DataType;
-                                     $$ = ex(item);  }
+                                     //item = opr('+', 2, $1, $3); 
+                                    // $$ = ex(item);  
+                                    if($1->DataType == $3->DataType)
+                                        {printf("Compiled Successfuly, Matched Types\n");item->DataType=$1->DataType;}
+                                    else
+                                        printf("Mismatched data types, Syntax error\n");
+                                   $$ = item;
+                                   }
         | expr   '-'   expr       { item = malloc(sizeof(struct DataItem));
-                                     item = opr('-', 2, $1, $3); 
-                                     item->DataType = $1->DataType;
-                                     $$ = ex(item);  }
+                                     //item = opr('+', 2, $1, $3); 
+                                    // $$ = ex(item);  
+                                    if($1->DataType == $3->DataType)
+                                        {printf("Compiled Successfuly, Matched Types\n");item->DataType=$1->DataType;}
+                                    else
+                                        printf("Mismatched data types, Syntax error\n");
+                                   $$ = item;
+                                   }
         | expr   '*'   expr       { item = malloc(sizeof(struct DataItem));
-                                     item = opr('*', 2, $1, $3); 
-                                     item->DataType = $1->DataType;
-                                     $$ = ex(item);  }
+                                     //item = opr('+', 2, $1, $3); 
+                                    // $$ = ex(item);  
+                                    if($1->DataType == $3->DataType)
+                                        {printf("Compiled Successfuly, Matched Types\n");item->DataType=$1->DataType;}
+                                    else
+                                        printf("Mismatched data types, Syntax error\n");
+                                   $$ = item;
+                                   }
         | expr   '/'   expr       { item = malloc(sizeof(struct DataItem));
-                                     item = opr('/', 2, $1, $3); 
-                                     item->DataType = $1->DataType;
-                                     $$ = ex(item);  }
+                                     //item = opr('+', 2, $1, $3); 
+                                    // $$ = ex(item);  
+                                    if($1->DataType == $3->DataType)
+                                       { 
+                                               if($3->DataType == Int_Type)
+                                        {
+                                           if($3->data==0)
+                                                printf("Error, Division By Zero\n");
+                                           else
+                                                {printf("Compiled Successfuly, Matched Types\n");item->DataType=$1->DataType;}
+
+                                        }
+                                        }
+                                    else
+                                        printf("Mismatched data types, Syntax error\n");
+
+                                        $$=item;
+
+                                   }
         // | incrementation          // { $$ = $1; }
         | '('   expr   ')'        { $$ = $2; }
         ;
 
 comparisons:
-          expr GE expr          //{ $$ = opr(GE, 2, $1, $3); }
-        | expr LE expr          //{ $$ = opr(LE, 2, $1, $3); }
-        | expr NE expr          //{ $$ = opr(NE, 2, $1, $3); }
-        | expr EQ expr          //{ $$ = opr(EQ, 2, $1, $3); }
-        | expr '<' expr         //{ $$ = opr('<', 2, $1, $3); }
-        | expr '>' expr         //{ $$ = opr('>', 2, $1, $3); }
+          expr GE expr          { item = malloc(sizeof(struct DataItem));
+                                     //item = opr('+', 2, $1, $3); 
+                                    // $$ = ex(item);  
+                                    if($1->DataType == $3->DataType)
+                                        printf("Compiled Successfuly, Matched Types\n");
+                                    else
+                                        printf("Mismatched data types, Syntax error\n");
+                                }
+        | expr LE expr          { item = malloc(sizeof(struct DataItem));
+                                     //item = opr('+', 2, $1, $3); 
+                                    // $$ = ex(item);  
+                                    if($1->DataType == $3->DataType)
+                                        printf("Compiled Successfuly, Matched Types\n");
+                                    else
+                                        printf("Mismatched data types, Syntax error\n");
+                                }
+        | expr NE expr         { item = malloc(sizeof(struct DataItem));
+                                     //item = opr('+', 2, $1, $3); 
+                                    // $$ = ex(item);  
+                                    if($1->DataType == $3->DataType)
+                                        printf("Compiled Successfuly, Matched Types\n");
+                                    else
+                                        printf("Mismatched data types, Syntax error\n");
+                                }
+        | expr EQ expr          { item = malloc(sizeof(struct DataItem));
+                                     //item = opr('+', 2, $1, $3); 
+                                    // $$ = ex(item);  
+                                    if($1->DataType == $3->DataType)
+                                        printf("Compiled Successfuly, Matched Types\n");
+                                    else
+                                        printf("Mismatched data types, Syntax error\n");
+                                }
+        | expr '<' expr         { item = malloc(sizeof(struct DataItem));
+                                     //item = opr('+', 2, $1, $3); 
+                                    // $$ = ex(item);  
+                                    if($1->DataType == $3->DataType)
+                                        printf("Compiled Successfuly, Matched Types\n");
+                                    else
+                                        printf("Mismatched data types, Syntax error\n");
+                                }
+        | expr '>' expr         { item = malloc(sizeof(struct DataItem));
+                                     //item = opr('+', 2, $1, $3); 
+                                    // $$ = ex(item);  
+                                    if($1->DataType == $3->DataType)
+                                        printf("Compiled Successfuly, Matched Types\n");
+                                    else
+                                        printf("Mismatched data types, Syntax error\n");
+                                }
         //| NOT expr              { printf("NOT expr \n"); }
         ;
 
@@ -200,23 +292,58 @@ condition:
         ;
 
 if:
-        IF '(' condition ')' stmt %prec IFX         //{ $$ = opr(IF, 2, $3, $5); }
-        | IF '(' condition ')' stmt ELSE stmt       //{ $$ = opr(IF, 3, $3, $5, $7); }
+        IF '(' condition ')' stmt %prec IFX         { printf("If Condition Matched\n"); }
+        | IF '(' condition ')' stmt ELSE stmt       { printf("If Else Condition Matched\n"); }
         ;
 
 while:
-        WHILE '(' condition ')' stmt            //{ $$ = opr(WHILE, 2, $3, $5); }
+        WHILE '(' condition ')' stmt            { //$$ = opr(WHILE, 2, $3, $5); 
+                                                  printf("While Loop Matched\n");      
+                                                }
         ;
 
 incrementation:
-        VARIABLE INC             //{ $$ = opr(INC, 1, id($1));}
-        | VARIABLE DEC           //{ $$ = opr(DEC, 1, id($1));}
+        VARIABLE INC             { item = malloc(sizeof(struct DataItem));
+                                  item = search($1);
+                                  if(item->DataType == Int_Type | item->DataType == Float_Type)
+                                        printf("Variable Increment, Matched Int or Float\n");
+                                  else
+                                         printf("Syntax Error, Cannot Increment other types that Int or Float \n");
+                                 }
+        | VARIABLE DEC           {  item = malloc(sizeof(struct DataItem));
+                                  item = search($1);
+                                  if(item->DataType == Int_Type | item->DataType == Float_Type)
+                                        printf("Variable Decrement, Matched Int or Float\n");
+                                  else
+                                         printf("Syntax Error, Cannot Decrement other types that Int or Float \n");
+                                         }
         ;
 
 preincrementation:
-             VARIABLE "=" expr  //{ $$ = opr('=', 2, id($1), $3); }
-            | INC VARIABLE      //{ $$ = opr(INC, 1, id($2));}
-            | DEC VARIABLE      //{ $$ = opr(DEC, 1, id($2));}
+             VARIABLE "=" expr  { 
+                                    item = malloc(sizeof(struct DataItem));
+                                     //item = opr('+', 2, $1, $3); 
+                                    // $$ = ex(item);
+                                    item = search($1);  
+                                    if(item->DataType == $3->DataType)
+                                        printf("Compiled Successfuly, Matched Types\n");
+                                    else
+                                        printf("Mismatched data types, Syntax error\n");
+                                   }
+            | INC VARIABLE      { item = malloc(sizeof(struct DataItem));
+                                  item = search($2);
+                                  if(item->DataType == Int_Type | item->DataType == Float_Type)
+                                        printf("Variable Increment, Matched Int or Float\n");
+                                  else
+                                         printf("Syntax Error, Cannot Increment other types that Int or Float \n");
+                                 }
+            | DEC VARIABLE      {  item = malloc(sizeof(struct DataItem));
+                                  item = search($2);
+                                  if(item->DataType == Int_Type | item->DataType == Float_Type)
+                                        printf("Variable Decrement, Matched Int or Float\n");
+                                  else
+                                         printf("Syntax Error, Cannot Decrement other types that Int or Float \n");
+                                         }
             ;
 forincrementation:
               incrementation
@@ -224,15 +351,15 @@ forincrementation:
               ;
 
 for:
-        FOR '(' declare condition ';' forincrementation ')' stmt  //{ $$ = opr(FOR, 4, $3, $4, $6, $8); }
+        FOR '(' declare condition ';' forincrementation ')' stmt  { printf("For loop matched\n"); }
         ;
 
 repeatuntil:
-        REPEAT stmt UNTIL '(' condition ')'     
+        REPEAT stmt UNTIL '(' condition ')'     { printf("Repeat Until matched\n"); }   
         ;
 
 case:
-        CASE DIGITS':' stmt BREAK ';' case
+        CASE DIGITS':' stmt BREAK ';' case       
         |
         ;
 
@@ -242,20 +369,19 @@ switch:
         ;
 
 argument:
-        identifier VARIABLE arguments { printf("argument\n"); }
+        identifier VARIABLE arguments { FunctionInputs[FuncCount] = dataTypeVariable; FuncCount++; printf("argument\n");}
         |
         ;
 
 
-arguments:  ',' identifier VARIABLE arguments { printf("arguments\n"); }
+arguments:  ',' identifier VARIABLE arguments { FunctionInputs[FuncCount] = dataTypeVariable; FuncCount++; printf("argumentsss\n");}
 		|
 		;
 
-// FunctionStmt:              
-//                  RETURN VARIABLE ';'
-//                 | RETURN DIGITS ';'
-//                 | RETURN ';'
-//                 ;
+ FunctionStmt:              
+                  RETURN expr ';'  
+                 | RETURN ';'      
+                 ;
 
 function:
         identifier VARIABLE '(' argument ')'  stmt    { printf("Function\n"); }
@@ -263,49 +389,6 @@ function:
 
 %%
 
-
-// nodeType *declare(int value, char value2, int datatype) {
-//     nodeType *p;
-
-//     /* allocate node */
-//     if ((p = malloc(sizeof(nodeType))) == NULL)
-//         yyerror("out of memory");
-
-// //     printf("CON\n");
-// //     printf("Type is %d\n", datatype);
-//     p->type = typeData;
-//     p->typeVar = datatype;
-//     switch(p->typeVar){
-//             case Int_Type: 
-//                 p->con.value = value; 
-//                 p->type = typeCon;
-//                 printf("Declare int is %d\n", p->con.value); 
-//                 break;
-//             case Char_Type: 
-//                 p->con.valueChar = value2; 
-//                 printf("Declare char is %c\n", p->con.valueChar); 
-//                 break;
-//     }
-    
-//     return p;
-// }
-
-// nodeType *con(int value) {
-//     nodeType *p;
-
-//     /* allocate node */
-//     if ((p = malloc(sizeof(nodeType))) == NULL)
-//         yyerror("out of memory");
-
-//     /* copy information */
-// //     printf("CON\n");
-// //     printf("Type is %d\n", typeCon);
-// //     printf("Value is %d\n", value);
-//     p->type = typeCon;
-//     p->con.value = value;
-
-//     return p;
-// }
 
 struct DataItem *opr(int oper, int nops, ...) {
     va_list ap;

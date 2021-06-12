@@ -22,7 +22,7 @@ void display() {
    for(i = 0; i<SIZE; i++) {
 	
       if(SymbolTable[i] != NULL)
-         printf(" (%s,%d)",SymbolTable[i]->Variable_Name,SymbolTable[i]->data);
+         printf(" (Var Name:%s, Data Type:%d)",SymbolTable[i]->Variable_Name,SymbolTable[i]->DataType);
       else
          printf(" ~~ ");
    }
@@ -36,7 +36,7 @@ struct DataItem *search(char* Variable_Name) {
 	//printf("var %s\n", Variable_Name);
    //move in array until an empty 
    while(SymbolTable[hashIndex] != NULL) {
-      printf("var %s\n", SymbolTable[hashIndex]->Variable_Name);
+      //printf("var %s\n", SymbolTable[hashIndex]->Variable_Name);
       if(!strcmp(SymbolTable[hashIndex]->Variable_Name, Variable_Name))   //CAN YOU STAY UP ALL NIGHT
         {
            
