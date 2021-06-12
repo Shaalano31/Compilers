@@ -11,7 +11,7 @@
         struct DataItem *opr(int oper, int nops, ...);
         // nodeType *id(int i);
         // nodeType *con(int value);
-        //void freeNode(nodeType *p);
+        void freeNode(struct DataItem *p);
         int ex(struct DataItem *p);
         int yylex(void);
         void yyerror(char *);
@@ -22,7 +22,7 @@
         int defaultInt = 0;
         //char* defaultChar = 'a';
         float defaultFloat = 0.0;
-        char* defaultBool;
+        bool defaultBool;
     
     //struct DataItem* SymbolTable[20]; 
     int sym[5];
@@ -56,18 +56,19 @@
 %%
 
 program:
-        program stmt        //{ ex($2); }
+        program stmt       { ex($2); }
         | program function
         | /* NULL */
         ;
 
 stmt:
         ';'             //{ $$ = opr(';', 2, NULL, NULL); }
-        | expr ';'      //{ $$ = $1; }
-        | declare       { printf("declare \n");}
+        | expr ';'      {  $$ = $1; }
+        | comparisons
+        | declare       { $$ = NULL;}
         | const         { printf("const \n");}
         | if            { printf("if \n");}
-        | while         { printf("while \n");}
+        | while         { $$ = $1; }
         | for           //{ printf("for \n");}
         | BREAK ';'     { printf("BREAK \n");}        
         | CONTINUE ';'  { printf("CONTINUE \n");}
@@ -96,7 +97,9 @@ stmt:
                                    dehk = malloc(sizeof(struct DataItem));
                                    dehk = $3;
                                    update(dehk->data,dehk->dataChar,dehk->dataFloat, dehk->dataBool, $1);
-                                   display();}
+                                   display();
+                                   $$ = dehk;
+                                   }       
         | '{' stmt_list '}'     { $$ = $2; }
         ;
 
@@ -119,7 +122,7 @@ declare:
         identifier VARIABLE ';'            { enum DataTypes* nulldude; 
                                             $$ = insert(defaultInt,"a",defaultFloat, 1, $2, 0, dataTypeVariable, 0, nulldude, 0 ); display(); }
 
-        | identifier VARIABLE '=' expr ';'  { printf("declare\n"); 
+        | identifier VARIABLE '=' expr ';'  { 
                                              dehk = malloc(sizeof(struct DataItem));
                                              dehk = $4 ;
                                              enum DataTypes* nulldude;
@@ -131,7 +134,7 @@ const:
         ;
 
 expr:
-        VARIABLE                  {$$ = search($1);}
+        VARIABLE                  {$$ = search($1); }
         |  DIGITS                 { item = malloc(sizeof(struct DataItem));
                                      item->data = $1;
                                      item->DataType = Int_Type;
@@ -151,25 +154,32 @@ expr:
                                      item->dataChar = $1;
                                      $$ = item;      }
                                      //printf("Catch\n");   }
-        | '-' expr %prec UMINUS    { printf("Welcome\n"); item = malloc(sizeof(struct DataItem));
-                                     dehk = malloc(sizeof(struct DataItem));
+        | '-' expr %prec UMINUS    { printf("Welcome\n"); 
+                                     item = malloc(sizeof(struct DataItem));
+                                     //dehk = malloc(sizeof(struct DataItem));
                                      //dehk = $2;
-                                     dehk->data = 0;
-                                     dehk->dataFloat = 0.0;
-                                     dehk->DataType = $2->DataType;
-                                     item = opr('-', 2, dehk ,$2); 
+                                //      dehk->data = 0;
+                                //      dehk->dataFloat = 0.0;
+                                //      dehk->DataType = $2->DataType;
+                                     item = opr(UMINUS, 1, $2);
                                      printf("Welcome\n");
                                      item->DataType = $2->DataType;
                                      $$ = ex(item);  }
+                                     //freeNode(item); 
+                                     //free(dehk);     }
 
         | expr   '+'   expr        { item = malloc(sizeof(struct DataItem));
                                      item = opr('+', 2, $1, $3); 
                                      item->DataType = $1->DataType;
                                      $$ = ex(item);  }
+
         | expr   '-'   expr       { item = malloc(sizeof(struct DataItem));
                                      item = opr('-', 2, $1, $3); 
                                      item->DataType = $1->DataType;
-                                     $$ = ex(item);  }
+                                     //printf("Valuu %d\n", item->data);
+                                     $$ = item;  
+                                     }
+
         | expr   '*'   expr       { item = malloc(sizeof(struct DataItem));
                                      item = opr('*', 2, $1, $3); 
                                      item->DataType = $1->DataType;
@@ -178,17 +188,47 @@ expr:
                                      item = opr('/', 2, $1, $3); 
                                      item->DataType = $1->DataType;
                                      $$ = ex(item);  }
-        // | incrementation          // { $$ = $1; }
+        | incrementation          { $$ = $1; }
         | '('   expr   ')'        { $$ = $2; }
         ;
 
 comparisons:
-          expr GE expr          //{ $$ = opr(GE, 2, $1, $3); }
-        | expr LE expr          //{ $$ = opr(LE, 2, $1, $3); }
-        | expr NE expr          //{ $$ = opr(NE, 2, $1, $3); }
-        | expr EQ expr          //{ $$ = opr(EQ, 2, $1, $3); }
-        | expr '<' expr         //{ $$ = opr('<', 2, $1, $3); }
-        | expr '>' expr         //{ $$ = opr('>', 2, $1, $3); }
+        expr GE expr          { //printf("condition\n");
+                                item = malloc(sizeof(struct DataItem)); 
+                                item = opr(GE, 2, $1, $3); 
+                                item->DataType = $1->DataType;
+                                $$ = item;
+                                printf("Bool value here is %s\n", $$->dataBool ? "true" : "false");  }
+        | expr LE expr          { printf("condition\n");
+                                item = malloc(sizeof(struct DataItem)); 
+                                item = opr(LE, 2, $1, $3); 
+                                item->DataType = $1->DataType;
+                                $$ = ex(item);  
+                                printf("Bool value is %s\n", $$->dataBool ? "true" : "false");  }
+        | expr NE expr          { //printf("condition\n");
+                                item = malloc(sizeof(struct DataItem)); 
+                                item = opr(NE, 2, $1, $3); 
+                                item->DataType = $1->DataType;
+                                $$ = ex(item);
+                                printf("Bool value is %s\n", $$->dataBool ? "true" : "false");  }
+        | expr EQ expr          { printf("condition\n");
+                                item = malloc(sizeof(struct DataItem)); 
+                                item = opr(EQ, 2, $1, $3); 
+                                item->DataType = $1->DataType;
+                                $$ = ex(item);  
+                                printf("Bool value is %s\n", $$->dataBool ? "true" : "false");  }
+        | expr '<' expr         { printf("condition\n");
+                                item = malloc(sizeof(struct DataItem)); 
+                                item = opr('<', 2, $1, $3); 
+                                item->DataType = $1->DataType;
+                                $$ = ex(item);  
+                                printf("Bool value is %s\n", $$->dataBool ? "true" : "false");  }
+        | expr '>' expr         { printf("condition\n");
+                                item = malloc(sizeof(struct DataItem)); 
+                                item = opr('>', 2, $1, $3); 
+                                item->DataType = $1->DataType;
+                                $$ = ex(item);  
+                                printf("Bool value is %s\n", $$->dataBool ? "true" : "false");  }
         //| NOT expr              { printf("NOT expr \n"); }
         ;
 
@@ -205,11 +245,35 @@ if:
         ;
 
 while:
-        WHILE '(' condition ')' stmt            //{ $$ = opr(WHILE, 2, $3, $5); }
+        WHILE '(' comparisons ')' stmt      { //printf("WHILEEE\n");
+                                            item = malloc(sizeof(struct DataItem)); 
+                                            item = opr(WHILE, 2, $3, $5); 
+                                            printf("WHI %d\n", $5->data);
+                                            item->DataType = $3->DataType;
+                                            $$ = item; }
         ;
 
 incrementation:
-        VARIABLE INC             //{ $$ = opr(INC, 1, id($1));}
+        VARIABLE INC             { printf("Welcome\n"); 
+                                     struct DataItem* dummy = malloc(sizeof(struct DataItem));
+                                     struct DataItem* dummy2 = malloc(sizeof(struct DataItem));
+                                     item = malloc(sizeof(struct DataItem));
+                                     dehk = malloc(sizeof(struct DataItem));
+
+                                     dummy = search($1);
+                                     $$ = dummy;
+
+                                     dehk->data = 1;
+                                     dehk->dataFloat = 1.0;
+                                     dehk->DataType = dummy->DataType;
+
+                                     item = opr('+', 2, dummy, dehk);
+                                     printf("Welcome\n");
+                                     item->DataType = dummy->DataType;
+
+                                     dummy2 = ex(item);  
+                                     update(dummy2->data, dummy2->dataChar, dummy2->dataFloat, dummy2->dataBool, $1);
+                                      }
         | VARIABLE DEC           //{ $$ = opr(DEC, 1, id($1));}
         ;
 
@@ -329,16 +393,16 @@ struct DataItem *opr(int oper, int nops, ...) {
     return p;
 }
 
-// void freeNode(nodeType *p) {
-//     int i;
+void freeNode(struct DataItem *p) {
+    int i;
 
-//     if (!p) return;
-//     if (p->type == typeOpr) {
-//         for (i = 0; i < p->opr.nops; i++)
-//             freeNode(p->opr.op[i]);
-//     }
-//     free (p);
-// }
+    if (!p) return;
+
+        for (i = 0; i < p->opr.nops; i++)
+            freeNode(p->opr.op[i]);
+
+    free (p);
+}
 
 
 void yyerror(char *s) {

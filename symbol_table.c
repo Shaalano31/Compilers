@@ -36,7 +36,7 @@ struct DataItem *search(char* Variable_Name) {
 	//printf("var %s\n", Variable_Name);
    //move in array until an empty 
    while(SymbolTable[hashIndex] != NULL) {
-      printf("var %s\n", SymbolTable[hashIndex]->Variable_Name);
+      //printf("var %s\n", SymbolTable[hashIndex]->Variable_Name);
       if(!strcmp(SymbolTable[hashIndex]->Variable_Name, Variable_Name))   //CAN YOU STAY UP ALL NIGHT
         {
            
@@ -75,7 +75,7 @@ void update(int data,char* dataChar, float dataFloat, bool dataBool,char* Variab
    {
       if(item->isConstant == 0)
       {
-         printf("Updated\n");
+         //printf("Updated\n");
          switch (item->DataType)
          {
             case 1:
