@@ -2,17 +2,17 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <stdarg.h>
-    #include "symbol_table.h"
     #include <stdbool.h>
-    #include "calc2.h"
+    #include "symbol_table.h"
+    
     
     /* prototypes */
         // nodeType *declare(int value, char value2, int datatype);
-        // nodeType *opr(int oper, int nops, ...);
+        struct DataItem *opr(int oper, int nops, ...);
         // nodeType *id(int i);
         // nodeType *con(int value);
-        void freeNode(nodeType *p);
-        int ex(nodeType *p);
+        //void freeNode(nodeType *p);
+        int ex(struct DataItem *p);
         int yylex(void);
         void yyerror(char *);
         struct DataItem* item;
@@ -56,7 +56,7 @@
 %%
 
 program:
-        program stmt        //{ ex($2); freeNode($2); }
+        program stmt        //{ ex($2); }
         | program function
         | /* NULL */
         ;
@@ -93,7 +93,7 @@ stmt:
         //| FunctionStmt  
         | VARIABLE '=' expr ';'  { display();
 
-        dehk = malloc(sizeof(struct DataItem));
+                                   dehk = malloc(sizeof(struct DataItem));
                                    dehk = $3;
                                    update(dehk->data,dehk->dataChar,dehk->dataFloat, dehk->dataBool, $1);
                                    display();}
@@ -148,7 +148,9 @@ expr:
                                      $$ = item;      }
                                      //printf("Catch\n");   }
         // | '-' expr %prec UMINUS   //      { $$ = opr(UMINUS, 1, $2); }
-        // | expr   '+'   expr       //  { $$ = opr('+', 2, $1, $3); }
+        | expr   '+'   expr        { item = malloc(sizeof(struct DataItem));
+                                     item = opr('+', 2, $1, $3); 
+                                     $$ = ex(item);  }
         // | expr   '-'   expr       //  { $$ = opr('-', 2, $1, $3); }
         // | expr   '*'   expr       //  { $$ = opr('*', 2, $1, $3); }
         // | expr   '/'   expr       //  { $$ = opr('/', 2, $1, $3); }
@@ -281,26 +283,26 @@ function:
 //     return p;
 // }
 
-// DataItem *opr(int oper, int nops, ...) {
-//     va_list ap;
-//     nodeType *p;
-//     int i;
+struct DataItem *opr(int oper, int nops, ...) {
+    va_list ap;
+    struct DataItem *p;
+    int i;
 
-//     /* allocate node, extending op array */
-//     if ((p = malloc(sizeof(nodeType) + (nops-1) * sizeof(nodeType *))) == NULL)
-//         yyerror("out of memory");
+    /* allocate node, extending op array */
+    if ((p = malloc(sizeof(struct DataItem) + (nops-1) * sizeof(struct DataItem *))) == NULL)
+        yyerror("out of memory");
 
-//     /* copy information */
-//     p->type = typeOpr;
-//     p->opr.oper = oper;
-//     p->opr.nops = nops;
-//     p->typeVar =Int_Type;
-//     va_start(ap, nops);
-//     for (i = 0; i < nops; i++)
-//         p->opr.op[i] = va_arg(ap, nodeType*);
-//     va_end(ap);
-//     return p;
-// }
+    /* copy information */
+    //p->type = typeOpr;
+    p->opr.oper = oper;
+    p->opr.nops = nops;
+    //p->typeVar =Int_Type;
+    va_start(ap, nops);
+    for (i = 0; i < nops; i++)
+        p->opr.op[i] = va_arg(ap, struct DataItem*);
+    va_end(ap);
+    return p;
+}
 
 // void freeNode(nodeType *p) {
 //     int i;
