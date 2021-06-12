@@ -1,7 +1,8 @@
     /* calculator #1 */
 %{
     #include <stdlib.h>
-    #include "calc2.h"
+    #include <stdbool.h>
+    //#include "calc2.h"
     //#include "symbol_table.c"
     #include <string.h>
     #include "y.tab.h"
