@@ -22,7 +22,38 @@ void display() {
    for(i = 0; i<SIZE; i++) {
 	
       if(SymbolTable[i] != NULL)
+     { 
+        if(SymbolTable[i]->isFunction)
+         {
+            printf(" (Var Name:%s, Data Type:%d, Output Type:%d)",SymbolTable[i]->Variable_Name,SymbolTable[i]->DataType,SymbolTable[i]->Output);
+
+            for(int j=0; j<SIZE && SymbolTable[i]->Inputs[j]<=5 &&SymbolTable[i]->Inputs[j]>0  ;j++)
+               {    
+                  printf("(Data Type:%d)", SymbolTable[i]->Inputs[j]);
+               }
+
+         }
+         else
          printf(" (Var Name:%s, Data Type:%d)",SymbolTable[i]->Variable_Name,SymbolTable[i]->DataType);
+     }
+      else
+         printf(" ~~ ");
+   }
+	
+   printf("\n");
+}
+
+
+void display2() 
+{
+   int i = 0;
+	
+   for(i = 0; i<SIZE; i++) {
+	
+      if(FuncSymbolTable[i] != NULL)
+     { 
+         printf(" (Var Name:%s, Data Type:%d)",FuncSymbolTable[i]->Variable_Name,FuncSymbolTable[i]->DataType);
+     }
       else
          printf(" ~~ ");
    }
@@ -41,7 +72,13 @@ struct DataItem *search(char* Variable_Name) {
         {
            
            return SymbolTable[hashIndex];     
-        }                        //FUH......
+        }  
+        
+        if(!strcmp(FuncSymbolTable[hashIndex]->Variable_Name, Variable_Name))   //CAN YOU STAY UP ALL NIGHT
+        {
+           
+           return FuncSymbolTable[hashIndex];     
+        }                       
 			
       //go to next cell
       ++hashIndex;
@@ -109,7 +146,7 @@ void update(int data,char* dataChar, float dataFloat, bool dataBool,char* Variab
    }
 }
 
-struct DataItem* insert(int data,char* dataChar, float dataFloat, bool dataBool, char* Variable_Name,bool isConstant,enum DataTypes DataType,bool isFunction,enum DataTypes* Inputs, enum DataTypes Output )
+struct DataItem* insert(int data,char* dataChar, float dataFloat, bool dataBool, char* Variable_Name,bool isConstant,enum DataTypes DataType,bool isFunction,struct DataItem* Inputs[SIZE], enum DataTypes Output,int no_params )
  {
    if (search(Variable_Name)!=NULL)
    {return NULL;}
@@ -131,11 +168,21 @@ struct DataItem* insert(int data,char* dataChar, float dataFloat, bool dataBool,
    } 
    item->Variable_Name= (char*) malloc(sizeof(char)*30);
    strcpy( item->Variable_Name, Variable_Name);
-   item->isConstant = isConstant;
+   if(!isFunction)
+   {item->isConstant = isConstant;
    item->DataType = DataType;
    item->isFunction = isFunction;
-   item->Inputs = Inputs;
+  
+   }
+   else{
+   item->isFunction = isFunction;
+   item->DataType = DataType;
+
+   for (int i=0;i<no_params;i++)
+   item->Inputs[i] = Inputs[i];
+
    item->Output = Output;
+   }
 
    //get the hash 
    long long hashIndex = compute_hash(Variable_Name);
@@ -147,8 +194,34 @@ struct DataItem* insert(int data,char* dataChar, float dataFloat, bool dataBool,
       hashIndex %= SIZE;
    }	
 
+struct DataItem* insertTable2(char* Variable_Name, enum DataTypes DataType)
+ {
+  
 
-   SymbolTable[hashIndex] = item;
-display();
+   struct DataItem *item = (struct DataItem*) malloc(sizeof(struct DataItem));
+  
+   item->Variable_Name= (char*) malloc(sizeof(char)*30);
+   
+   strcpy( item->Variable_Name, Variable_Name);
+   
+   item->DataType = DataType;
+   item->isFunction = isFunction;
+  
+   
+   
+   //get the hash 
+   long long hashIndex = compute_hash(Variable_Name);
+   //move in array until an empty or deleted cell
+   while(FuncSymbolTable[hashIndex] != NULL ) {
+      //go to next cell
+      ++hashIndex;	
+      //wrap around the table
+      hashIndex %= SIZE;
+   }	
+
+
+
+   FuncSymbolTable[hashIndex] = item;
+   display2();
    return item;
 }

@@ -26,7 +26,7 @@ struct DataItem {
    bool isConstant;   
    enum DataTypes DataType;
    bool isFunction;
-   enum DataTypes* Inputs; 
+   struct DataItem* Inputs[SIZE]; 
    enum DataTypes Output; 
 
    union{
@@ -36,10 +36,14 @@ struct DataItem {
 };
 
 struct DataItem* SymbolTable[SIZE]; 
+struct DataItem* FuncSymbolTable[SIZE]; 
+
 struct DataItem* dummyItem;
 struct DataItem* item;
 
 extern long long compute_hash(char* s);
+struct DataItem* insertTable2(char* Variable_Name, enum DataTypes DataType);
+void display2();
 //     const int p = 31;
 //     const int m = 1e9 + 9;
 //     long long hash_value = 0;
@@ -148,7 +152,7 @@ extern void update(int data,char* dataChar, float dataFloat, bool dataBool,char*
 //    }
 // }
 
-extern struct DataItem* insert(int data,char* dataChar, float dataFloat, bool dataBool, char* Variable_Name,bool isConstant,enum DataTypes DataType,bool isFunction,enum DataTypes* Inputs, enum DataTypes Output );
+extern struct DataItem* insert(int data,char* dataChar, float dataFloat, bool dataBool, char* Variable_Name,bool isConstant,enum DataTypes DataType,bool isFunction,enum DataTypes Inputs[SIZE], enum DataTypes Output ,int no_params);
 //  {
 //    if (search(Variable_Name)!=NULL)
 //    {return NULL;}

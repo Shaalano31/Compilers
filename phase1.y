@@ -23,7 +23,7 @@
         //char* defaultChar = 'a';
         float defaultFloat = 0.0;
         char* defaultBool;
-        enum DataTypes FunctionInputs[20];
+        struct DataItem* FunctionInputs[20];
         int FuncCount = 0; 
     
     //struct DataItem* SymbolTable[20]; 
@@ -38,6 +38,7 @@
     bool boole;
     struct DataItem *nPtr;         /* node pointer */
 };
+
 %token <iValue>DIGITS 
 %token <sIndex>VARIABLE 
 %token <iFloat>FLOATDIGIT
@@ -124,7 +125,7 @@ identifier:
 
 declare:
         identifier VARIABLE ';'            { enum DataTypes* nulldude; 
-                                            $$ = insert(defaultInt,"a",defaultFloat, 1, $2, 0, dataTypeVariable, 0, nulldude, 0 ); 
+                                            $$ = insert(defaultInt,"a",defaultFloat, 1, $2, 0, dataTypeVariable, 0, nulldude, 0 ,0); 
                                             printf("Compiled Successfuly, Matched Types, Inserted into Symbol Table Var: %s\n",$2);
                                           }
 
@@ -136,7 +137,7 @@ declare:
                                              if(dataTypeVariable == $4->DataType)
                                                 {
                                                 printf("Compiled Successfuly, Matched Types, Inserted into Symbol Table Var: %s\n",$2);
-                                                $$ = insert(dehk->data,dehk->dataChar,dehk->dataFloat, dehk->dataBool, $2, 0, dataTypeVariable, 0, nulldude, 0 ); 
+                                                $$ = insert(dehk->data,dehk->dataChar,dehk->dataFloat, dehk->dataBool, $2, 0, dataTypeVariable, 0, nulldude, 0,0 ); 
                                                 }
                                              else
                                                 printf("Mismatched data types, Variable not inserted\n");
@@ -149,7 +150,7 @@ const:
         ;
 
 expr:
-        VARIABLE                  {$$ = search($1);}
+        VARIABLE                  { $$ = search($1); }
         |  DIGITS                 { item = malloc(sizeof(struct DataItem));
                                      item->data = $1;
                                      item->DataType = Int_Type;
@@ -320,6 +321,7 @@ incrementation:
         ;
 
 preincrementation:
+
              VARIABLE "=" expr  { 
                                     item = malloc(sizeof(struct DataItem));
                                      //item = opr('+', 2, $1, $3); 
@@ -369,13 +371,22 @@ switch:
         ;
 
 argument:
-        identifier VARIABLE arguments { FunctionInputs[FuncCount] = dataTypeVariable; FuncCount++; printf("argument\n");}
-        |
+        identifier VARIABLE arguments { insertTable2($2 ,dataTypeVariable );
+                                        FunctionInputs[FuncCount]=malloc(sizeof(struct DataItem)); 
+                                        FunctionInputs[FuncCount] ->Variable_Name=(char*) malloc(sizeof(char)*30); 
+                                        strcpy( FunctionInputs[FuncCount] ->Variable_Name,$2 ); 
+                                        FunctionInputs[FuncCount]->DataType= dataTypeVariable; FuncCount++; printf("argument\n");}
+                                        |
         ;
 
 
-arguments:  ',' identifier VARIABLE arguments { FunctionInputs[FuncCount] = dataTypeVariable; FuncCount++; printf("argumentsss\n");}
-		|
+arguments:  ',' identifier VARIABLE arguments { insertTable2($2,dataTypeVariable);
+                                                FunctionInputs[FuncCount]=malloc(sizeof(struct DataItem)); 
+                                                FunctionInputs[FuncCount] ->Variable_Name=(char*) malloc(sizeof(char)*30); 
+                                                strcpy( FunctionInputs[FuncCount] ->Variable_Name,$2);
+                                                FunctionInputs[FuncCount] ->DataType= dataTypeVariable; FuncCount++; 
+                                                printf("argumentsss\n");}
+	    |
 		;
 
  FunctionStmt:              
@@ -383,8 +394,19 @@ arguments:  ',' identifier VARIABLE arguments { FunctionInputs[FuncCount] = data
                  | RETURN ';'      
                  ;
 
+functiondeclare:
+                 identifier VARIABLE '(' argument ')' { 
+                                            insert(defaultInt,"a",defaultFloat, 1, $2, 0, dataTypeVariable, true, FunctionInputs,dataTypeVariable ,FuncCount);
+                                            FuncCount=0;
+                                            }
+                 ;
+
 function:
-        identifier VARIABLE '(' argument ')'  stmt    { printf("Function\n"); }
+         functiondeclare stmt   {   
+                                            printf("Function\n"); 
+
+                                
+                                }
         ;
 
 %%
