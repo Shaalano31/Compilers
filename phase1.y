@@ -52,7 +52,7 @@
 %left '*' '/'
 %nonassoc UMINUS
 
-%type <nPtr> stmt expr stmt_list comparisons if while condition incrementation preincrementation for forincrementation declare identifier argument arguments functiondeclare switch function case repeatuntil
+%type <nPtr> stmt expr stmt_list comparisons if while condition incrementation preincrementation for forincrementation declare identifier argument arguments functiondeclare switch function case repeatuntil callArgument callArguments
 %%
 
 program:
@@ -65,6 +65,7 @@ stmt:
         ';'             { $$ = opr(';', 2, NULL, NULL); }
         | expr ';'      { $$ = $1; }
         | declare       //{ printf("declare \n");}
+        | forincrementation 
         | const         { printf("const \n");}
         | if            { printf("if \n");}
         | while         { printf("while \n");}
@@ -192,6 +193,9 @@ expr:
                                      item->dataChar = $1;
                                      item->DataType = Char_Type;
                                      $$ = item;      }
+        | VARIABLE '(' callArgument ')' ';'  { $$ = opr(CALL, 1, $1);  
+                                               dehk = search($1); 
+                                               }
                                      //printf("Catch\n");   }
         | '-' expr %prec UMINUS    { item = $2; 
                                      if(item->DataType == Int_Type ||item->DataType == Float_Type )
@@ -252,6 +256,16 @@ expr:
                                    }
         | '('   expr   ')'        { $$ = $2; }
         ;
+
+ callArgument:  VARIABLE callArguments     {$$=$1;}
+                | DIGITS callArguments     {$$=$1;}
+                |
+                ;
+
+ callArguments: ','   VARIABLE callArguments      {$$=$2;}
+                | ',' DIGITS callArguments     {$$=$2;}
+                |
+                ;
 
 comparisons:
           expr GE expr          {   if($1->DataType == $3->DataType){
@@ -325,13 +339,16 @@ comparisons:
                                     else
                                         printf("Mismatched data types, Syntax error (EXPR > EXPR)\n");
                                 }
+        | expr AND expr         {$$ = $1;}
+        | expr OR expr          {$$ = $1;}
         ;
 
 condition:
-        comparisons                  { $$ = $1; }                        
-        | VARIABLE                   { $$ = id($1[0]); }
-        | condition AND condition    //{ $$ = opr(AND, 2, $1, $3); }
-        | condition OR condition     //{ $$ = opr(OR, 2, $1, $3); }
+        comparisons                  { $$ = $1; }   
+        | expr                       { $$ = $1;}
+        //| VARIABLE                   { $$ = id($1[0]); }
+        // | condition AND condition    //{ $$ = opr(AND, 2, $1, $3); }
+        // | condition OR condition     //{ $$ = opr(OR, 2, $1, $3); }
         ;
 
 if:
@@ -348,52 +365,58 @@ while:
 incrementation:
         VARIABLE INC             { item = malloc(sizeof(struct DataItem));
                                   item = search($1);
-                                  if(item->DataType == Int_Type | item->DataType == Float_Type)
-                                        printf("Variable Increment, Matched Int or Float\n");
+                                  if(item->DataType == Int_Type || item->DataType == Float_Type)
+                                  {
+                                      $$ = opr(INC, 1, id($1[0]));
+                                      printf("Variable Increment, Matched Int or Float\n");
+                                  }
+                                        
                                   else
                                          printf("Syntax Error, Cannot Increment other types that Int or Float \n");
                                  }
         | VARIABLE DEC           {  item = malloc(sizeof(struct DataItem));
                                   item = search($1);
-                                  if(item->DataType == Int_Type | item->DataType == Float_Type)
-                                        printf("Variable Decrement, Matched Int or Float\n");
+                                  if(item->DataType == Int_Type || item->DataType == Float_Type)
+                                  {
+                                      $$ = opr(DEC, 1, id($1[0]));
+                                      printf("Variable Decrement, Matched Int or Float\n");
+                                  }
+                                        
                                   else
                                          printf("Syntax Error, Cannot Decrement other types that Int or Float \n");
                                          }
         ;
 
 preincrementation:
-
-             VARIABLE "=" expr  { 
-                                    item = malloc(sizeof(struct DataItem));
-                                    item = search($1);  
-                                    if(item->DataType == $3->DataType)
-                                        printf("Compiled line Successfuly, Matched Types (VAR = EXPR)\n");
-                                    else
-                                        printf("Mismatched data types, Syntax error (VAR = EXPR)\n");
-                                   }
-            | INC VARIABLE      { item = malloc(sizeof(struct DataItem));
+            INC VARIABLE      { item = malloc(sizeof(struct DataItem));
                                   item = search($2);
                                   if(item->DataType == Int_Type | item->DataType == Float_Type)
-                                        printf("Variable Increment, Matched Int or Float\n");
+                                  {
+                                      $$ = opr(INC, 1, id($2[0]));
+                                      printf("Variable Increment, Matched Int or Float\n");
+                                  }
                                   else
                                          printf("Syntax Error, Cannot Increment other types that Int or Float \n");
                                  }
             | DEC VARIABLE      {  item = malloc(sizeof(struct DataItem));
                                   item = search($2);
                                   if(item->DataType == Int_Type | item->DataType == Float_Type)
-                                        printf("Variable Decrement, Matched Int or Float\n");
+                                {
+                                      $$ = opr(DEC, 1, id($2[0]));
+                                      printf("Variable Decrement, Matched Int or Float\n");
+                                  }
                                   else
                                          printf("Syntax Error, Cannot Decrement other types that Int or Float \n");
                                          }
             ;
+
 forincrementation:
               incrementation
               | preincrementation
               ;
 
 for:
-        FOR '(' declare condition ';' forincrementation ')' stmt  { printf("For loop matched\n"); $$ = opr(FOR, 4, $3, $4, $6, $8);}
+        FOR '(' declare condition ';' stmt ')' stmt  { printf("For loop matched\n"); $$ = opr(FOR, 4, $3, $4, $6, $8);}
         ;
 
 repeatuntil:

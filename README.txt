@@ -1,4 +1,4 @@
 bison --yacc phase1.y -d
 flex phase1.l
-gcc calc3a.c symbol_table.c y.tab.c lex.yy.c
+gcc calc2b.c symbol_table.c y.tab.c lex.yy.c
 a.exe
