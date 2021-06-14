@@ -5,7 +5,7 @@
 #include <stdbool.h>
 
 #define SIZE 20
-
+extern FILE* symbol;
 //enum DataTypes {NULL_TYPE=-1,Char_Type = 0, Int_Type = 1, Float_Type = 2, Bool_Type = 3 , Void_Type = 4};
 enum DataTypes {NULL_TYPE,Char_Type, Int_Type, Float_Type, Bool_Type, Void_Type};
 typedef enum { typeCon, typeId, typeOpr } nodeEnum;
