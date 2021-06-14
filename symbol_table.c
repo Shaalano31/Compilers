@@ -25,22 +25,22 @@ void display(int no_params) {
      { 
         if(SymbolTable[i]->isFunction)
          {
-            printf(" (Var Name:%s, Data Type:%d, Output Type:%d)",SymbolTable[i]->Variable_Name,SymbolTable[i]->DataType,SymbolTable[i]->Output);
+            fprintf(symbol," (Var Name:%s, Data Type:%d, Output Type:%d)",SymbolTable[i]->Variable_Name,SymbolTable[i]->DataType,SymbolTable[i]->Output);
 
             for(int j=0; j<no_params && SymbolTable[i]->Inputs[j]->DataType<=5 &&SymbolTable[i]->Inputs[j]->DataType>0  ;j++)
                {    
-                  printf("Function Parameters (%d,%s)", SymbolTable[i]->Inputs[j]->DataType, SymbolTable[i]->Inputs[j]->Variable_Name);
+                  fprintf(symbol,"Function Parameters (%d,%s)", SymbolTable[i]->Inputs[j]->DataType, SymbolTable[i]->Inputs[j]->Variable_Name);
                }
 
          }
          else
-         printf(" (Var Name:%s, Data Type:%d)",SymbolTable[i]->Variable_Name,SymbolTable[i]->DataType);
+         fprintf(symbol," (Var Name:%s, Data Type:%d)",SymbolTable[i]->Variable_Name,SymbolTable[i]->DataType);
      }
       else
-         printf(" ~~ ");
+         fprintf(symbol," ~~ ");
    }
 	
-   printf("\n");
+   fprintf(symbol,"\n");
 }
 
 
