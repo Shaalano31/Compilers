@@ -22,6 +22,7 @@
         float defaultFloat = 0.0;
         char* defaultBool;
         struct DataItem* FunctionInputs[20];
+        struct DataItem* FunctionCallInputs[20];
         int FuncCount = 0; 
     
     int sym[5];
@@ -193,9 +194,24 @@ expr:
                                      item->dataChar = $1;
                                      item->DataType = Char_Type;
                                      $$ = item;      }
-        | VARIABLE '(' callArgument ')' ';'  { $$ = opr(CALL, 1, $1);  
-                                               dehk = search($1); 
+        | VARIABLE '(' callArgument ')'  {   
+                                                struct DataItem* item= opr(CALL, 1, id($1[0])); 
+                                                dehk = search($1); 
+                                                item->DataType = dehk->DataType;
+                                                bool x=0;
+                                               for(int i=0;i<FuncCount;i++)
+                                               {
+                                                 if(dehk->Inputs[i]->DataType != FunctionCallInputs[i]->DataType)
+                                                    { x=1; break;}
+                                                printf("1: %d,2: %d\n",dehk->Inputs[i]->DataType,FunctionCallInputs[i]->DataType);
                                                }
+                                               if(x==1)
+                                                  printf("Error:Unmatched passed parameters with function arguments\n");
+                                               else
+                                                   printf("Function call successful\n");
+                                                FuncCount=0;
+                                               $$ = item;
+                                            }
                                      //printf("Catch\n");   }
         | '-' expr %prec UMINUS    { item = $2; 
                                      if(item->DataType == Int_Type ||item->DataType == Float_Type )
@@ -257,13 +273,19 @@ expr:
         | '('   expr   ')'        { $$ = $2; }
         ;
 
- callArgument:  VARIABLE callArguments     {$$=$1;}
-                | DIGITS callArguments     {$$=$1;}
+ callArgument:  VARIABLE callArguments     {struct DataItem* item = search($1);
+                                            if(item!=NULL)
+                                                FunctionCallInputs[FuncCount] = item;
+                                            FuncCount++;}
+                | DIGITS callArguments     
                 |
                 ;
 
- callArguments: ','   VARIABLE callArguments      {$$=$2;}
-                | ',' DIGITS callArguments     {$$=$2;}
+ callArguments: ','   VARIABLE callArguments      {struct DataItem* item = search($2);
+                                            if(item!=NULL)
+                                                FunctionCallInputs[FuncCount] = item;
+                                            FuncCount++;}
+                | ',' DIGITS callArguments     
                 |
                 ;
 

@@ -31,7 +31,7 @@ int ex(struct DataItem *p) {
             printf(":\n");
             break;
         case CALL:
-            printf("call %c", p->nodeType.opr.op[0]->nodeType.id.i);
+            printf("call %c\n", p->nodeType.opr.op[0]->nodeType.id.i);
             break;
         case WHILE:
             printf("L%03d:\n", lbl1 = lbl++);
