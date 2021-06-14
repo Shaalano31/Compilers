@@ -5,6 +5,10 @@
     #include <stdbool.h>
     #include "symbol_table.h"
     
+FILE* output;
+FILE* errors;
+FILE* symbol;
+extern FILE* yyin;
     
     /* prototypes */
         struct DataItem *opr(int oper, int nops, ...);
@@ -53,11 +57,11 @@
 %left '*' '/'
 %nonassoc UMINUS
 
-%type <nPtr> stmt expr stmt_list comparisons if while condition incrementation preincrementation for forincrementation declare identifier argument arguments functiondeclare switch function case repeatuntil callArgument callArguments
+%type <nPtr> stmt expr stmt_list comparisons if while condition incrementation preincrementation for forincrementation declare identifier argument arguments functiondeclare switch function case repeatuntil callArgument callArguments FunctionStmt
 %%
 
 program:
-        program stmt       { ex($2); freeNode($2); }
+        program stmt       { ex($2); freeNode($2);  }
         | program function { ex($2); freeNode($2); }
         | /* NULL */
         ;
@@ -141,10 +145,9 @@ declare:
                                              dehk = malloc(sizeof(struct DataItem));
                                              dehk = $4 ;
                                              struct DataItem** nulldude;
+                                             printf("%d,%d",dataTypeVariable, $4->DataType);
                                              if(dataTypeVariable == $4->DataType)
-                                                {
-                                               
-                                                
+                                                {                                                                                          
                                                 if(insert(dehk->data,dehk->dataChar,dehk->dataFloat, dehk->dataBool, $2, 0, dataTypeVariable, 0, nulldude, 0,0 )==NULL)
                                                     printf("Error, Variable with same name already declared.");
                                                 else
@@ -165,10 +168,10 @@ const:
         ;
 
 expr:
-        VARIABLE                  { item = malloc(sizeof(struct DataItem));
-                                    dehk = search($1); 
-                                    item = id($1[0]);   
-                                    item->DataType = dehk->DataType;
+        VARIABLE                  { 
+                                    struct DataItem* itemdehk = search($1);
+                                    struct DataItem* item = id($1[0]);   
+                                    item->DataType = itemdehk->DataType;
                                     $$ = item; }
         |  DIGITS                 { item = malloc(sizeof(struct DataItem));
                                      item = con($1);
@@ -184,10 +187,12 @@ expr:
         | TRUEE                   { item = malloc(sizeof(struct DataItem));
                                      item = con(1);
                                      item->dataBool = 1;
+                                     item->DataType = 4;
                                      $$ = item;      }
         | FALSEE                   { item = malloc(sizeof(struct DataItem));
                                      item = con(0);
                                      item->dataBool = 0;
+                                     item->DataType = 4;
                                      $$ = item;      }
         | CAR                      { item = malloc(sizeof(struct DataItem));
                                      item = id($1[0]); 
@@ -201,9 +206,9 @@ expr:
                                                 bool x=0;
                                                for(int i=0;i<FuncCount;i++)
                                                {
-                                                 if(dehk->Inputs[i]->DataType != FunctionCallInputs[i]->DataType)
+                                                  if(dehk->Inputs[i]->DataType != FunctionCallInputs[i]->DataType)
                                                     { x=1; break;}
-                                                printf("1: %d,2: %d\n",dehk->Inputs[i]->DataType,FunctionCallInputs[i]->DataType);
+                                                
                                                }
                                                if(x==1)
                                                   printf("Error:Unmatched passed parameters with function arguments\n");
@@ -236,26 +241,26 @@ expr:
                                      $$ = item;
                                    }
         | expr   '-'   expr       { item = malloc(sizeof(struct DataItem));
- 
                                     if($1->DataType == $3->DataType)
                                         {item = opr('-', 2, $1, $3); printf("Compiled line Successfuly, Matched Types (EXPR - EXPR)\n");item->DataType=$1->DataType;}
                                     else
                                         printf("Mismatched data types, Syntax error (EXPR - EXPR) \n");
+                                    item->data = 1;
                                    $$ = item;
                                    }
         | expr   '*'   expr       { item = malloc(sizeof(struct DataItem));
- 
+
                                     if($1->DataType == $3->DataType)
                                         {item = opr('*', 2, $1, $3); printf("Compiled line Successfuly, Matched Types (EXPR * EXPR)\n");item->DataType=$1->DataType;}
                                     else
-                                        printf("Mismatched data types, Syntax error  (EXPR * EXPR)\n");
+                                        printf("Mismatched data types, Syntax error  (EXPR * EXPR)\n");   
                                    $$ = item;
                                    }
         | expr   '/'   expr       { item = malloc(sizeof(struct DataItem));
 
                                     if($1->DataType == $3->DataType)
                                        { 
-                                               if($3->DataType == Int_Type)
+                                        if($3->DataType == Int_Type)
                                         {
                                            if($3->data==0)
                                                 printf("Error, Division By Zero\n");
@@ -266,10 +271,39 @@ expr:
                                         }
                                     else
                                         printf("Mismatched data types, Syntax error (EXPR / EXPR)\n");
+                                    $$=item;
 
-                                        $$=item;
-
-                                   }
+                                   } 
+        | expr AND expr         {   // $$ = opr(AND, 2, $1, $3); 
+                                    if($1->DataType == $3->DataType)
+                                    {
+                                        item = opr(AND, 2, $1, $3); 
+                                        item->DataType = 4;
+                                        printf("Compiled line Successfuly, Matched Types (EXPR && EXPR)\n");
+                                    }  
+                                    else
+                                    {
+                                        printf("Mismatched data types, Syntax error (EXPR && EXPR)\n");
+                                         item->DataType = 0;
+                                    }  
+                                    
+                                    $$ = item;                      
+                                }
+        | expr OR expr          {  //  $$ = opr(OR, 2, $1, $3); 
+                                    item = malloc(sizeof(struct DataItem)); 
+                                    if($1->DataType == $3->DataType)
+                                    {
+                                        item = malloc(sizeof(struct DataItem));
+                                        item->DataType = 4;
+                                       
+                                    } 
+                                    else
+                                       {
+                                        printf("Mismatched data types, Syntax error (EXPR || EXPR)\n");
+                                         item->DataType = 0;
+                                      }
+                                       $$ = item;
+                                }                        
         | '('   expr   ')'        { $$ = $2; }
         ;
 
@@ -361,8 +395,6 @@ comparisons:
                                     else
                                         printf("Mismatched data types, Syntax error (EXPR > EXPR)\n");
                                 }
-        | expr AND expr         {$$ = $1;}
-        | expr OR expr          {$$ = $1;}
         ;
 
 condition:
@@ -505,8 +537,8 @@ arguments:  ',' identifier VARIABLE arguments {
 		;
 
  FunctionStmt:              
-                  RETURN expr ';'  
-                 | RETURN ';'      
+                  RETURN expr ';'           {$$=$2;}
+                 | RETURN ';'     { $$ = opr(NOTHING, 0);}
                  ;
 
 functiondeclare:
@@ -605,5 +637,27 @@ void yyerror(char *s) {
 }
 
 int main(void) {
+    errors = fopen("error.txt", "w");
+    output = fopen("output.txt", "w");
+    symbol = fopen("symboltable.txt", "w");
+
+     FILE* input = fopen("input.txt", "r");
+     if(!input)
+     {
+         printf("Failed to read file\n");
+         return -1;
+     
+     }
+    yyin = input;
     yyparse();
+    display(1);
+    fclose (errors);
+    fclose (output);
+    fclose (symbol);
+
+    // if(errorExists == 1)
+    // {
+    //     fclose(fopen("output.txt", "w"));
+    // }
+    return 0;
 }
