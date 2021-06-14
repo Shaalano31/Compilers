@@ -1,3 +1,4 @@
+
     /* calculator #1 */
 %{
     #include <stdlib.h>
@@ -8,6 +9,8 @@
     #include "y.tab.h"
     void yyerror(char *);
 %}
+
+%option yylineno
 
 %%
 

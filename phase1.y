@@ -4,7 +4,9 @@
     #include <stdarg.h>
     #include <stdbool.h>
     #include "symbol_table.h"
-    
+    extern int yylineno;
+
+      
 FILE* output;
 FILE* errors;
 FILE* symbol;
@@ -17,7 +19,7 @@ extern FILE* yyin;
         void freeNode(struct DataItem *p);
         int ex(struct DataItem *p);
         int yylex(void);
-        void yyerror(char *);
+        void yyerror(const char *str);
         struct DataItem* item;
         struct DataItem* dehk;
         int dataTypeVariable;
@@ -105,8 +107,8 @@ stmt:
                                         $$ = opr('=', 2, id($1[0]), $3);
                                         printf("Compiled Successfuly, Matched Types\n");
                                     }
-                                    else
-                                        printf("Mismatched data types, Syntax error\n");
+                                    else{ errors = fopen("error.txt", "w"); fprintf(errors,"Mismatched data types, Syntax error\n"); fclose(errors);}
+                                        
                                    }
         | FunctionStmt  {printf("function statement\n");}
                                 
@@ -632,32 +634,32 @@ void freeNode(struct DataItem *p) {
 }
 
 
-void yyerror(char *s) {
-    fprintf(stderr, "%s\n", s);
+void yyerror(const char *str)
+{
+    fprintf(errors,"error: %s in line %d\n", str, yylineno);
+    fprintf(errors,"^\n");
 }
+
 
 int main(void) {
     errors = fopen("error.txt", "w");
     output = fopen("output.txt", "w");
     symbol = fopen("symboltable.txt", "w");
 
-     FILE* input = fopen("input.txt", "r");
-     if(!input)
-     {
-         printf("Failed to read file\n");
-         return -1;
+    //  FILE* input = fopen("input.txt", "r");
+    //  if(!input)
+    //  {
+    //      printf("Failed to read file\n");
+    //      return -1;
      
-     }
-    yyin = input;
-    yyparse();
-    display(1);
+    //  }
+    //yyin = input;
+   yyparse();
+    //display(1);
     fclose (errors);
     fclose (output);
     fclose (symbol);
 
-    // if(errorExists == 1)
-    // {
-    //     fclose(fopen("output.txt", "w"));
-    // }
+    
     return 0;
 }
